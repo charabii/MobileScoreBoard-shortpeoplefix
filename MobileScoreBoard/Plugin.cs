@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using System;
+using GorillaLocomotion;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.XR;
@@ -12,43 +12,47 @@ namespace MobileScoreBoard
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
-        private readonly XRNode lNode = XRNode.LeftHand;
-        bool pressing;
-        int secHeld;
-        bool cooldown;
-        ConfigEntry<int> HoldTime;
-        GorillaMetaReport gmet;
+        private bool pressing;
+        private float holdTimeCounter;
+        private bool cooldown;
+        private ConfigEntry<int> holdTime;
+        private GorillaMetaReport gmet;
+
         void Start()
         {
-            Utilla.Events.GameInitialized += OnGameInitialized;
+            GorillaTagger.OnPlayerSpawned(OnGameInitialized);
         }
 
-        void OnGameInitialized(object sender, EventArgs e)
+        void OnGameInitialized()
         {
-            HoldTime = Config.Bind("Settings", "Hold Time", 4);
+            holdTime = Config.Bind("Settings", "Hold Time", 4);
             gmet = FindObjectOfType<GorillaMetaReport>();
-            gmet.enabled = true;
+            gmet.reportScoreboard.transform.localScale = new Vector3(.6f, .6f, .6f);
         }
 
         void Update()
         {
+            pressing = ControllerInputPoller.instance.rightControllerSecondaryButton;
 
-            InputDevices.GetDeviceAtXRNode(lNode).TryGetFeatureValue(CommonUsages.primaryButton, out pressing);
-            if(pressing && cooldown == false) 
+            if (pressing && !cooldown)
             {
-                cooldown = true;
-                StartCoroutine(Cooldown(1));
-                secHeld++;
+                holdTimeCounter += Time.deltaTime;
+
+                if (holdTimeCounter >= holdTime.Value)
+                {
+                    gmet.StartOverlay();
+                    cooldown = true;
+                    holdTimeCounter = 0;
+                    StartCoroutine(Cooldown(1f));
+                }
             }
-            if (!pressing)
+            else
             {
-                secHeld = 0;
+                holdTimeCounter = 0;
             }
-            if (secHeld == HoldTime.Value)
-            {
-                FindObjectOfType<GorillaMetaReport>().StartOverlay();
-            }
+            gmet.isMoving = true;
         }
+
         IEnumerator Cooldown(float sec)
         {
             yield return new WaitForSeconds(sec);
