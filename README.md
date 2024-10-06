@@ -1,5 +1,9 @@
 im short and cant reach the x :sob:
 
+press B to close the scoreboard
+
+dont close it with B after reporting somebody just wait for it to close by itself
+
 also fixed the void issue so you cant open it again while its already open
 
 # MobileScoreBoard
