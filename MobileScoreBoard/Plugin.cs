@@ -1,10 +1,11 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using GorillaLocomotion;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR;
 using Utilla;
+using Valve.VR;
 
 namespace MobileScoreBoard
 {
@@ -13,10 +14,13 @@ namespace MobileScoreBoard
     public class Plugin : BaseUnityPlugin
     {
         private bool pressing;
+        private bool pressingb;
         private float holdTimeCounter;
         private bool cooldown;
+        private bool cooldownnew;
         private ConfigEntry<int> holdTime;
         private GorillaMetaReport gmet;
+        private GorillaReportButton gmetb;
 
         void Start()
         {
@@ -27,28 +31,36 @@ namespace MobileScoreBoard
         {
             holdTime = Config.Bind("Settings", "Hold Time", 4);
             gmet = FindObjectOfType<GorillaMetaReport>();
-            gmet.reportScoreboard.transform.localScale = new Vector3(.6f, .6f, .6f);
+            gmetb = FindObjectOfType<GorillaReportButton>();
+            cooldownnew = false;
         }
 
         void Update()
         {
-            pressing = ControllerInputPoller.instance.rightControllerSecondaryButton;
+            pressingb = ControllerInputPoller.instance.rightControllerSecondaryButton;
+            pressing = ControllerInputPoller.instance.leftControllerSecondaryButton;
 
-            if (pressing && !cooldown)
+            if (pressing)
             {
-                holdTimeCounter += Time.deltaTime;
-
-                if (holdTimeCounter >= holdTime.Value)
+                if (cooldownnew == false)
                 {
                     gmet.StartOverlay();
-                    cooldown = true;
-                    holdTimeCounter = 0;
-                    StartCoroutine(Cooldown(1f));
+                    cooldownnew = true;
                 }
             }
             else
             {
-                holdTimeCounter = 0;
+                cooldownnew = false;
+            }
+            gmet.isMoving = false;
+
+            if (pressingb)
+            {
+                gmetb.selected = true;
+            }
+            else
+            {
+                gmetb.selected = false;
             }
             gmet.isMoving = true;
         }
@@ -58,5 +70,7 @@ namespace MobileScoreBoard
             yield return new WaitForSeconds(sec);
             cooldown = false;
         }
+
+        
     }
 }
