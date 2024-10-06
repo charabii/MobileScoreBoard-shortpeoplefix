@@ -1,3 +1,7 @@
+im short and cant reach the x :sob:
+
+also fixed the void issue so you cant open it again while its already open
+
 # MobileScoreBoard
 
 Features in a game should not be platform exlusive so i made this work
