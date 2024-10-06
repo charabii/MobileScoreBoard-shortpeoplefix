@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR;
 using Utilla;
-using Valve.VR;
 
 namespace MobileScoreBoard
 {
